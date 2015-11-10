@@ -7,30 +7,55 @@ import java.net.Socket;
 
 public class ChatClient {
 
+	private Socket connection;
+	private DataInputStream reader;
+	private DataOutputStream writer;
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String hostname = "localhost"; //args[0];
-		int port = 5555; //Integer.parseInt(args[1]);
-		Socket connection = null;
+		ChatClient chat = new ChatClient(args[0], Integer.parseInt(args[1]));
+		chat.open(args[2]);
+		chat.close();
+
+	}
+	
+	public ChatClient(String hostname, int port){
+		connection = null;
 		try{
-			connection = new Socket(hostname, port);
+			connection = new Socket(hostname, port);		
+			DataInputStream reader = new DataInputStream(connection.getInputStream());
+			DataOutputStream writer = new DataOutputStream(connection.getOutputStream());
 		}catch(IOException ioe){
 			System.err.println("Connection failed");
 			return;
 		}
+	}
+	
+	public void open(String userName){
 		try{
-			DataInputStream reader = new DataInputStream(connection.getInputStream());
-			DataOutputStream writer = new DataOutputStream(connection.getOutputStream());
-			writer.writeUTF("user");
+			writer.writeUTF(userName);
 			String reply = reader.readUTF();
 			System.out.println("Server reply : "+reply);
 			writer.flush();
-			reader.close();
-			writer.close();
-			connection.close();
-		}catch(IOException ios){
-			
 		}
+		catch(IOException ioe){
+			System.err.println(ioe.getStackTrace().toString());
+		}
+	}
+	
+	public void close(){
+		try{
+			writer.close();
+			reader.close();
+			connection.close();
+		}
+		catch(IOException ioe){
+			System.err.println(ioe.getStackTrace().toString());
+		}
+	}
+	
+	public void sendMessage(String[] message, String to){
+
 	}
 
 }
