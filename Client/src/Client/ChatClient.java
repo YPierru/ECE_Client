@@ -74,7 +74,7 @@ public class ChatClient {
 	
 	public void deleteRoom(String name){
 		try{
-			writer.writeUTF("cr/;"+name);
+			writer.writeUTF("dr/;"+name);
 		}
 		catch(IOException ioe){
 			System.err.println(ioe.getStackTrace().toString());
