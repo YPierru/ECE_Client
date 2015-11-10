@@ -54,8 +54,31 @@ public class ChatClient {
 		}
 	}
 	
-	public void sendMessage(String[] message, String to){
-
+	public void sendMessage(String message, String to){
+		try{
+			writer.writeUTF("m/;"+to+"/;"+message);
+		}
+		catch(IOException ioe){
+			System.err.println(ioe.getStackTrace().toString());
+		}
+	}
+	
+	public void createRoom(String name){
+		try{
+			writer.writeUTF("cr/;"+name);
+		}
+		catch(IOException ioe){
+			System.err.println(ioe.getStackTrace().toString());
+		}
+	}
+	
+	public void deleteRoom(String name){
+		try{
+			writer.writeUTF("cr/;"+name);
+		}
+		catch(IOException ioe){
+			System.err.println(ioe.getStackTrace().toString());
+		}
 	}
 
 }
