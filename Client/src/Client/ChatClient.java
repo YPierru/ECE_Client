@@ -42,20 +42,19 @@ public class ChatClient {
 	public ChatClient(String hostname, int port){
 		try{
 			connection = new Socket(hostname, port);		
-			DataInputStream reader = new DataInputStream(connection.getInputStream());
-			DataOutputStream writer = new DataOutputStream(connection.getOutputStream());
+			reader = new DataInputStream(connection.getInputStream());
+			writer = new DataOutputStream(connection.getOutputStream());
 		}catch(IOException ioe){
 			System.err.println("Connection failed");
-			return;
 		}
 	}
 	
 	public void open(String userName){
 		try{
-			writer.writeUTF(userName);
+			this.writer.writeUTF(userName);
 			String reply = reader.readUTF();
 			System.out.println("Server reply : "+reply);
-			writer.flush();
+			this.writer.flush();
 		}
 		catch(IOException ioe){
 			System.err.println(ioe.getStackTrace().toString());
