@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
 
-import com.sun.xml.internal.ws.resources.SenderMessages;
-
 public class ChatClient {
 
 	private Socket connection;
@@ -17,12 +15,10 @@ public class ChatClient {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		ChatClient chat = new ChatClient(args[0], Integer.parseInt(args[1]));
-		@SuppressWarnings("resource")
-		Scanner sc = new Scanner(System.in);
-		@SuppressWarnings("unused")
 		String raw = "";
 		chat.open(args[2]);
 		while(true){
+			Scanner sc = new Scanner(System.in);
 			raw = sc.nextLine();
 			if(raw.equals("m")){
 				String to = sc.nextLine();
@@ -37,6 +33,7 @@ public class ChatClient {
 				String name = sc.nextLine();
 				chat.deleteRoom(name);
 			}
+			sc.close();
 		}
 	}
 	
