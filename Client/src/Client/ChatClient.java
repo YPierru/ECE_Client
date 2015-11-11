@@ -17,8 +17,8 @@ public class ChatClient {
 		ChatClient chat = new ChatClient(args[0], Integer.parseInt(args[1]));
 		String raw = "";
 		chat.open(args[2]);
-		while(true){
-			Scanner sc = new Scanner(System.in);
+		Scanner sc = new Scanner(System.in);
+		while(!raw.equals("leave")){
 			raw = sc.nextLine();
 			if(raw.equals("m")){
 				String to = sc.nextLine();
@@ -33,13 +33,13 @@ public class ChatClient {
 				String name = sc.nextLine();
 				chat.deleteRoom(name);
 			}
-			sc.close();
 		}
+		sc.close();
+		chat.close();
 	}
 	
 	@SuppressWarnings("unused")
 	public ChatClient(String hostname, int port){
-		connection = null;
 		try{
 			connection = new Socket(hostname, port);		
 			DataInputStream reader = new DataInputStream(connection.getInputStream());
@@ -76,6 +76,7 @@ public class ChatClient {
 	public void sendMessage(String message, String to){
 		try{
 			writer.writeUTF("m/;"+to+"/;"+message);
+			writer.flush();
 		}
 		catch(IOException ioe){
 			System.err.println(ioe.getStackTrace().toString());
@@ -85,6 +86,7 @@ public class ChatClient {
 	public void createRoom(String name){
 		try{
 			writer.writeUTF("cr/;"+name);
+			writer.flush();
 		}
 		catch(IOException ioe){
 			System.err.println(ioe.getStackTrace().toString());
@@ -94,6 +96,7 @@ public class ChatClient {
 	public void deleteRoom(String name){
 		try{
 			writer.writeUTF("dr/;"+name);
+			writer.flush();
 		}
 		catch(IOException ioe){
 			System.err.println(ioe.getStackTrace().toString());
