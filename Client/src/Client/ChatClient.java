@@ -4,6 +4,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Scanner;
+
+import com.sun.xml.internal.ws.resources.SenderMessages;
 
 public class ChatClient {
 
@@ -14,11 +17,30 @@ public class ChatClient {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		ChatClient chat = new ChatClient(args[0], Integer.parseInt(args[1]));
+		@SuppressWarnings("resource")
+		Scanner sc = new Scanner(System.in);
+		@SuppressWarnings("unused")
+		String raw = "";
 		chat.open(args[2]);
-		chat.close();
-
+		while(true){
+			raw = sc.nextLine();
+			if(raw.equals("m")){
+				String to = sc.nextLine();
+				String message = sc.nextLine(); 
+				chat.sendMessage(message, to);
+			}
+			else if(raw.equals("cr")){
+				String name = sc.nextLine();
+				chat.createRoom(name);
+			}
+			else if(raw.equals("dr")){
+				String name = sc.nextLine();
+				chat.deleteRoom(name);
+			}
+		}
 	}
 	
+	@SuppressWarnings("unused")
 	public ChatClient(String hostname, int port){
 		connection = null;
 		try{
