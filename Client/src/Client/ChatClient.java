@@ -74,6 +74,7 @@ public class ChatClient {
 	
 	public void sendMessage(String message, String to){
 		try{
+			System.out.println("sended : "+"m/;"+to+"/;"+message);
 			writer.writeUTF("m/;"+to+"/;"+message);
 			writer.flush();
 		}
