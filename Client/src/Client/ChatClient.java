@@ -38,7 +38,7 @@ public class ChatClient {
 		chat.close();
 	}
 	
-	@SuppressWarnings("unused")
+
 	public ChatClient(String hostname, int port){
 		try{
 			connection = new Socket(hostname, port);		
