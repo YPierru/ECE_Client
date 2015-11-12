@@ -11,35 +11,27 @@ public class ChatClient {
 	private Socket connection;
 	private DataInputStream reader;
 	private DataOutputStream writer;
+	private String username;
+	private Scanner sc;
 	
+	/**
+	 * Le main se charge uniquement de démarrer le client
+	 * @param args
+	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		ChatClient chat = new ChatClient(args[0], Integer.parseInt(args[1]));
-		String raw = "";
-		chat.open(args[2]);
-		Scanner sc = new Scanner(System.in);
-		while(!raw.equals("leave")){
-			raw = sc.nextLine();
-			if(raw.equals("m")){
-				String to = sc.nextLine();
-				String message = sc.nextLine(); 
-				chat.sendMessage(message, to);
-			}
-			else if(raw.equals("cr")){
-				String name = sc.nextLine();
-				chat.createRoom(name);
-			}
-			else if(raw.equals("dr")){
-				String name = sc.nextLine();
-				chat.deleteRoom(name);
-			}
-		}
-		sc.close();
-		chat.close();
+		new ChatClient(args[0], Integer.parseInt(args[1]), args[2]);
 	}
 	
 
-	public ChatClient(String hostname, int port){
+	/**
+	 * Constructeur : ouvre la socket, les stream de lecture/écriture, et lance le protocole d'échange
+	 * @param hostname
+	 * @param port
+	 * @param user
+	 */
+	public ChatClient(String hostname, int port, String user){
+		username=user;
+		sc = new Scanner(System.in);
 		try{
 			connection = new Socket(hostname, port);		
 			reader = new DataInputStream(connection.getInputStream());
@@ -47,21 +39,70 @@ public class ChatClient {
 		}catch(IOException ioe){
 			System.err.println("Connection failed");
 		}
-	}
-	
-	public void open(String userName){
-		try{
-			this.writer.writeUTF(userName);
-			String reply = reader.readUTF();
-			System.out.println("Server reply : "+reply);
-			this.writer.flush();
-		}
-		catch(IOException ioe){
-			System.err.println(ioe.getStackTrace().toString());
+		
+		try {
+			talkingToServer();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
-	public void close(){
+	/**
+	 * Il y avait une fonction open, elle n'est plus nécessaire. L'envoi de l'username est dans talkingToServer()
+	 */
+	
+	/**
+	 * Protocole d'échange avec le serveur
+	 * @throws IOException
+	 */
+	private void talkingToServer() throws IOException{
+		
+		//Pour que le serveur nous identifie, on lui envoi notre pseudo
+		writer.writeUTF(username);
+		writer.flush();
+		
+		//Création d'un Thread pour écouter les messages entrants, et les afficher
+		Thread listenReader=new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					while(true){
+						System.out.println(reader.readUTF());
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		});
+		listenReader.start();
+		
+		
+		//Pour l'instant j'ai simplifié cette méthode, j'ai préféré me concentrer d'abord sur l'envoi/réception de messages simples.
+		String raw="";
+		while(!raw.equals("leave")){
+			raw = sc.nextLine();
+			/*if(raw.equals("m")){
+				String to = sc.nextLine();
+				String message = sc.nextLine(); 
+				sendMessage(message, to);
+			}
+			else if(raw.equals("cr")){
+				String name = sc.nextLine();
+				createRoom(name);
+			}
+			else if(raw.equals("dr")){
+				String name = sc.nextLine();
+				deleteRoom(name);
+			}*/
+			sendMessage(raw, "");
+		}
+		
+		close();
+	}
+	
+	private void close(){
 		try{
 			writer.close();
 			reader.close();
@@ -72,10 +113,10 @@ public class ChatClient {
 		}
 	}
 	
-	public void sendMessage(String message, String to){
+	private void sendMessage(String message, String to){
 		try{
-			System.out.println("sended : "+"m/;"+to+"/;"+message);
-			writer.writeUTF("m/;"+to+"/;"+message);
+			//writer.writeUTF("m/;"+to+"/;"+message);
+			writer.writeUTF(message);
 			writer.flush();
 		}
 		catch(IOException ioe){
@@ -83,7 +124,7 @@ public class ChatClient {
 		}
 	}
 	
-	public void createRoom(String name){
+	private void createRoom(String name){
 		try{
 			writer.writeUTF("cr/;"+name);
 			writer.flush();
@@ -93,7 +134,7 @@ public class ChatClient {
 		}
 	}
 	
-	public void deleteRoom(String name){
+	private void deleteRoom(String name){
 		try{
 			writer.writeUTF("dr/;"+name);
 			writer.flush();
