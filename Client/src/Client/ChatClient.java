@@ -19,6 +19,7 @@ public class ChatClient {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		//new JF_main("yan kcdq");
 		new ChatClient(args[0], Integer.parseInt(args[1]), args[2]);
 	}
 	
@@ -33,7 +34,8 @@ public class ChatClient {
 		username=user;
 		sc = new Scanner(System.in);
 		try{
-			connection = new Socket(hostname, port);		
+			connection = new Socket(hostname, port);
+			new JF_main(user);
 			reader = new DataInputStream(connection.getInputStream());
 			writer = new DataOutputStream(connection.getOutputStream());
 		}catch(IOException ioe){
