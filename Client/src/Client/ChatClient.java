@@ -1,5 +1,7 @@
 package Client;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -35,7 +37,7 @@ public class ChatClient {
 		sc = new Scanner(System.in);
 		try{
 			connection = new Socket(hostname, port);
-			new JF_main(user);
+			new JF_main(user,this);
 			reader = new DataInputStream(connection.getInputStream());
 			writer = new DataOutputStream(connection.getOutputStream());
 		}catch(IOException ioe){
@@ -73,7 +75,6 @@ public class ChatClient {
 						System.out.println(reader.readUTF());
 					}
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -115,7 +116,7 @@ public class ChatClient {
 		}
 	}
 	
-	private void sendMessage(String message, String to){
+	public void sendMessage(String message, String roomName){
 		try{
 			//writer.writeUTF("m/;"+to+"/;"+message);
 			writer.writeUTF(message);
@@ -126,9 +127,19 @@ public class ChatClient {
 		}
 	}
 	
-	private void createRoom(String name){
+	public void createRoom(String name){
 		try{
-			writer.writeUTF("cr/;"+name);
+			writer.writeUTF("[NewRoom]"+name);
+			writer.flush();
+		}
+		catch(IOException ioe){
+			System.err.println(ioe.getStackTrace().toString());
+		}
+	}
+	
+	public void setCurrentRoom(String name){
+		try{
+			writer.writeUTF("[SetCurrentRoom]"+name);
 			writer.flush();
 		}
 		catch(IOException ioe){
@@ -145,5 +156,5 @@ public class ChatClient {
 			System.err.println(ioe.getStackTrace().toString());
 		}
 	}
-
+	
 }
