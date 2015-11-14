@@ -17,7 +17,6 @@ public class JF_main extends JFrame{
 	private JButton btnJoinRoom;
 	private JButton btnDelRoom;
 	private JButton btnPVP;
-	private JLabel labelTest;
 	private ArrayList<String> listRoomsName;
 	private ArrayList<JF_roomTchat> listRoomsTchat;
 	private ChatClient chatClient;
@@ -34,7 +33,6 @@ public class JF_main extends JFrame{
 		btnDelRoom = new JButton("Supprimer salle");
 		btnPVP = new JButton("Message privé avec un user");
 		
-		labelTest=new JLabel("");
 		
 		setLayout(new FlowLayout());
 		setSize(800, 70);
@@ -42,7 +40,6 @@ public class JF_main extends JFrame{
 		add(btnJoinRoom);
 		add(btnDelRoom);
 		add(btnPVP);
-		add(labelTest);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		btnNewRoom.addActionListener(new NewRoomAL(this));
@@ -75,8 +72,6 @@ public class JF_main extends JFrame{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String roomName = JOptionPane.showInputDialog(jfmain,"Tapez le nom de la salle", null);
-			//listRoomsName.add(roomName);
-			labelTest.setText(roomName);
 			chatClient.createRoom(roomName);
 			listRoomsTchat.add(new JF_roomTchat(roomName, chatClient, username));
 		}
@@ -95,8 +90,7 @@ public class JF_main extends JFrame{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String roomName = JOptionPane.showInputDialog(jfmain,"Salle à rejoindre", null);
-			
-			
+					
 			if(listRoomsName.contains(roomName)){
 				chatClient.setCurrentRoom(roomName);
 				listRoomsTchat.add(new JF_roomTchat(roomName, chatClient, username));

@@ -1,7 +1,5 @@
 package Client;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -12,12 +10,9 @@ import java.util.Scanner;
 public class ChatClient {
 
 	private Socket connection;
-	//private DataInputStream reader;
-	//private DataOutputStream writer;
-	private ObjectInputStream reader;
+	private ObjectInputStream reader; //On utilise maintenant des ObjectInputStream, ce qui permet de faire passer des objets (et non plus uniquement des data)
 	private ObjectOutputStream writer;
 	private String username;
-	private Scanner sc;
 	private JF_main mainFrame;
 	
 	/**
@@ -38,7 +33,6 @@ public class ChatClient {
 	 */
 	public ChatClient(String hostname, int port, String user){
 		username=user;
-		sc = new Scanner(System.in);
 		try{
 			connection = new Socket(hostname, port);
 			mainFrame=new JF_main(user,this);
@@ -55,9 +49,6 @@ public class ChatClient {
 		}
 	}
 	
-	/**
-	 * Il y avait une fonction open, elle n'est plus nécessaire. L'envoi de l'username est dans talkingToServer()
-	 */
 	
 	/**
 	 * Protocole d'échange avec le serveur
@@ -77,12 +68,15 @@ public class ChatClient {
 				try {
 					while(true){
 						Object o = reader.readObject();
+						//Si l'objet reçu est une ArrayList
 						if(o instanceof ArrayList<?>){
 							mainFrame.setListRoomsNames((ArrayList<String>)o);
 						}else{
 							String msg = (String)o;
+							//On extrait le nom de la salle
 							String room = msg.substring(msg.indexOf("[")+1, msg.indexOf("]"));
 							msg = msg.replace("["+room+"]", "");
+							//On affiche le message dans la bonne salle
 							for(JF_roomTchat tchat : mainFrame.getRoomsTchat()){
 								if(tchat.getRoomName().equals(room)){
 									tchat.displayNewMessage(msg);
@@ -122,6 +116,7 @@ public class ChatClient {
 		}
 	}
 	
+	//On envoi la commande de création d'une room
 	public void createRoom(String name){
 		try{
 			writer.writeUTF("[NewRoom]"+name);
@@ -132,6 +127,7 @@ public class ChatClient {
 		}
 	}
 	
+	//Envoi la commande de modification de la room courante
 	public void setCurrentRoom(String name){
 		try{
 			writer.writeUTF("[SetCurrentRoom]"+name);
