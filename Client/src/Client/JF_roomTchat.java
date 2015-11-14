@@ -20,13 +20,15 @@ public class JF_roomTchat extends JFrame{
 	
 	private String roomName;
 	private ChatClient chatClient;
+	private String username;
 	
-	public JF_roomTchat(String name, ChatClient cc)
+	public JF_roomTchat(String name, ChatClient cc,String user)
 	{
 
 		super("Room : "+name);
 		chatClient=cc;
 		roomName=name;
+		username=user;
 
 		JPanel panelFields = new JPanel();
 		panelFields.setLayout(new BoxLayout(panelFields, BoxLayout.X_AXIS));
@@ -55,11 +57,10 @@ public class JF_roomTchat extends JFrame{
 					return;
 				}
 				// add message to the message area
-				messagesArea.append("\n"+messageText);
+				messagesArea.append("\n"+"<"+username+">"+messageText);
 				// send the message to the client
 				// clear text
 				chatClient.sendMessage(messageText, "");
-				System.out.println(messageText);
 				message.setText("");
 			}
 		});
@@ -87,6 +88,14 @@ public class JF_roomTchat extends JFrame{
 
 		setLocationRelativeTo(null); // *** center the app *** 
 		pack();
+	}
+	
+	public String getRoomName(){
+		return roomName;
+	}
+	
+	public void displayNewMessage(String msg){
+		messagesArea.append("\n"+msg);
 	}
 
 }

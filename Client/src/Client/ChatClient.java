@@ -1,20 +1,24 @@
 package Client;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ChatClient {
 
 	private Socket connection;
-	private DataInputStream reader;
-	private DataOutputStream writer;
+	//private DataInputStream reader;
+	//private DataOutputStream writer;
+	private ObjectInputStream reader;
+	private ObjectOutputStream writer;
 	private String username;
 	private Scanner sc;
+	private JF_main mainFrame;
 	
 	/**
 	 * Le main se charge uniquement de démarrer le client
@@ -37,9 +41,9 @@ public class ChatClient {
 		sc = new Scanner(System.in);
 		try{
 			connection = new Socket(hostname, port);
-			new JF_main(user,this);
-			reader = new DataInputStream(connection.getInputStream());
-			writer = new DataOutputStream(connection.getOutputStream());
+			mainFrame=new JF_main(user,this);
+			writer = new ObjectOutputStream(connection.getOutputStream());
+			reader = new ObjectInputStream(connection.getInputStream());
 		}catch(IOException ioe){
 			System.err.println("Connection failed");
 		}
@@ -63,7 +67,7 @@ public class ChatClient {
 		
 		//Pour que le serveur nous identifie, on lui envoi notre pseudo
 		writer.writeUTF(username);
-		writer.flush();
+		writer.flush();		
 		
 		//Création d'un Thread pour écouter les messages entrants, et les afficher
 		Thread listenReader=new Thread(new Runnable() {
@@ -72,37 +76,29 @@ public class ChatClient {
 			public void run() {
 				try {
 					while(true){
-						System.out.println(reader.readUTF());
+						Object o = reader.readObject();
+						if(o instanceof ArrayList<?>){
+							mainFrame.setListRoomsNames((ArrayList<String>)o);
+						}else{
+							String msg = (String)o;
+							String room = msg.substring(msg.indexOf("[")+1, msg.indexOf("]"));
+							msg = msg.replace("["+room+"]", "");
+							for(JF_roomTchat tchat : mainFrame.getRoomsTchat()){
+								if(tchat.getRoomName().equals(room)){
+									tchat.displayNewMessage(msg);
+								}
+							}
+						}
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
+				}catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
 				}
 			}
 		});
 		listenReader.start();
 		
-		
-		//Pour l'instant j'ai simplifié cette méthode, j'ai préféré me concentrer d'abord sur l'envoi/réception de messages simples.
-		String raw="";
-		while(!raw.equals("leave")){
-			raw = sc.nextLine();
-			/*if(raw.equals("m")){
-				String to = sc.nextLine();
-				String message = sc.nextLine(); 
-				sendMessage(message, to);
-			}
-			else if(raw.equals("cr")){
-				String name = sc.nextLine();
-				createRoom(name);
-			}
-			else if(raw.equals("dr")){
-				String name = sc.nextLine();
-				deleteRoom(name);
-			}*/
-			sendMessage(raw, "");
-		}
-		
-		close();
 	}
 	
 	private void close(){
@@ -118,7 +114,6 @@ public class ChatClient {
 	
 	public void sendMessage(String message, String roomName){
 		try{
-			//writer.writeUTF("m/;"+to+"/;"+message);
 			writer.writeUTF(message);
 			writer.flush();
 		}

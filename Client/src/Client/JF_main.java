@@ -19,14 +19,16 @@ public class JF_main extends JFrame{
 	private JButton btnPVP;
 	private JLabel labelTest;
 	private ArrayList<String> listRoomsName;
+	private ArrayList<JF_roomTchat> listRoomsTchat;
 	private ChatClient chatClient;
 
 	public JF_main(String user, ChatClient cc){
 		super("Client - "+user);
 		username=user;
 		chatClient=cc;
+		listRoomsTchat= new ArrayList<>();
 		
-		listRoomsName = new ArrayList<>();
+		//listRoomsName = new ArrayList<>();
 		btnNewRoom = new JButton("Nouvelle salle");
 		btnJoinRoom = new JButton("Rejoindre salle");
 		btnDelRoom = new JButton("Supprimer salle");
@@ -51,6 +53,16 @@ public class JF_main extends JFrame{
 		setVisible(true);
 	}
 	
+	public void setListRoomsNames(ArrayList<String> l){
+		listRoomsName=l;
+		System.out.println(listRoomsName);
+	}
+	
+	public ArrayList<JF_roomTchat> getRoomsTchat(){
+		return listRoomsTchat;
+	}
+	
+	
 	
 	private class NewRoomAL implements ActionListener{
 		
@@ -63,10 +75,10 @@ public class JF_main extends JFrame{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String roomName = JOptionPane.showInputDialog(jfmain,"Tapez le nom de la salle", null);
-			listRoomsName.add(roomName);
+			//listRoomsName.add(roomName);
 			labelTest.setText(roomName);
 			chatClient.createRoom(roomName);
-			new JF_roomTchat(roomName, chatClient);
+			listRoomsTchat.add(new JF_roomTchat(roomName, chatClient, username));
 		}
 		
 	}
@@ -86,9 +98,8 @@ public class JF_main extends JFrame{
 			
 			
 			if(listRoomsName.contains(roomName)){
-				System.out.println("ici");
 				chatClient.setCurrentRoom(roomName);
-				new JF_roomTchat(roomName, chatClient);
+				listRoomsTchat.add(new JF_roomTchat(roomName, chatClient, username));
 			}
 		}
 		
