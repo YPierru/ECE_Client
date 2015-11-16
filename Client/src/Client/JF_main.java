@@ -71,7 +71,7 @@ public class JF_main extends JFrame{
 		
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			String roomName = JOptionPane.showInputDialog(jfmain,"Tapez le nom de la salle", null);
+			String roomName = JOptionPane.showInputDialog(jfmain,"Tapez le nom de la salle", "Ouvrir une salle");
 			chatClient.createRoom(roomName);
 			listRoomsTchat.add(new JF_roomTchat(roomName, chatClient, username));
 		}
@@ -89,7 +89,16 @@ public class JF_main extends JFrame{
 		
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			String roomName = JOptionPane.showInputDialog(jfmain,"Salle à rejoindre", null);
+			System.out.println(listRoomsName);
+			String[] arrayRoomNames = listRoomsName.toArray(new String[listRoomsName.size()]);
+			String roomName = (String) JOptionPane.showInputDialog(jfmain, 
+			        "Sélectionnez la salle à rejoindre",
+			        "Rejoindre une salle",
+			        JOptionPane.QUESTION_MESSAGE, 
+			        null, 
+			        arrayRoomNames, 
+			        arrayRoomNames[0]);
+			chatClient.createRoom(roomName);
 					
 			if(listRoomsName.contains(roomName)){
 				chatClient.setCurrentRoom(roomName);
