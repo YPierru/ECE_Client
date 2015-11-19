@@ -1,7 +1,11 @@
-package Client;
+package client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -10,6 +14,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import client.ChatClient;
 
 public class JF_roomTchat extends JFrame{
 	
@@ -25,10 +31,12 @@ public class JF_roomTchat extends JFrame{
 	public JF_roomTchat(String name, ChatClient cc,String user)
 	{
 
-		super("Room : "+name);
+		super(user+" Room : "+name);
 		chatClient=cc;
 		roomName=name;
 		username=user;
+		
+		addWindowFocusListener(new MyWindowFocusListener(name));
 
 		JPanel panelFields = new JPanel();
 		panelFields.setLayout(new BoxLayout(panelFields, BoxLayout.X_AXIS));
@@ -42,26 +50,13 @@ public class JF_roomTchat extends JFrame{
 		messagesArea.setRows(10);
 		messagesArea.setEditable(false);
 		
-		sendButton = new JButton("Send");
+		sendButton = new JButton("Envoyer");
 		sendButton.addActionListener(new ActionListener()
 		{
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				// get the message from the text view
-				String messageText = message.getText();
-				if(messageText.toString().trim().equals(""))
-				{
-					message.setText("");
-					message.requestFocus();
-					return;
-				}
-				// add message to the message area
-				messagesArea.append("\n"+"<"+username+">"+messageText);
-				// send the message to the client
-				// clear text
-				chatClient.sendMessage(messageText, "");
-				message.setText("");
+				sendMessage();
 			}
 		});
 
@@ -70,6 +65,7 @@ public class JF_roomTchat extends JFrame{
 		message = new JTextField();
 		message.setSize(200, 20);
 		message.setScrollOffset(1);
+		message.addKeyListener(new MyKeyListener());
 
 		// add the buttons and the text fields to the panel
 		JScrollPane sp = new JScrollPane(messagesArea);
@@ -90,12 +86,74 @@ public class JF_roomTchat extends JFrame{
 		pack();
 	}
 	
+	private void sendMessage(){
+		
+		String msg =message.getText();
+		
+		if(msg.toString().trim().equals(""))
+		{
+			message.setText("");
+			message.requestFocus();
+			return;
+		}
+		// add message to the message area
+		messagesArea.append("\n"+"<"+username+">"+msg);
+		// send the message to the client
+		// clear text
+		chatClient.sendMessage(msg);
+		message.setText("");
+	}
+	
 	public String getRoomName(){
 		return roomName;
 	}
 	
 	public void displayNewMessage(String msg){
 		messagesArea.append("\n"+msg);
+	}
+	
+	
+	private class MyWindowFocusListener implements WindowFocusListener{
+		
+		private String roomName;
+		
+		public MyWindowFocusListener(String rn){
+			roomName=rn;
+		}
+
+		@Override
+		public void windowGainedFocus(WindowEvent e) {
+			chatClient.setCurrentRoom(roomName);
+		}
+
+		@Override
+		public void windowLostFocus(WindowEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+	}
+	
+	private class MyKeyListener implements KeyListener{
+
+		@Override
+		public void keyTyped(KeyEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if(e.getKeyCode() == KeyEvent.VK_ENTER){
+			      sendMessage();
+			}
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		
 	}
 
 }

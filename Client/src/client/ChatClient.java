@@ -1,4 +1,4 @@
-package Client;
+package client;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -7,10 +7,14 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import client.commands.Commandes;
+import client.gui.JF_main;
+import client.gui.JF_roomTchat;
+
 public class ChatClient {
 
 	private Socket connection;
-	private ObjectInputStream reader; //On utilise maintenant des ObjectInputStream, ce qui permet de faire passer des objets (et non plus uniquement des data)
+	private ObjectInputStream reader;
 	private ObjectOutputStream writer;
 	private String username;
 	private JF_main mainFrame;
@@ -20,7 +24,6 @@ public class ChatClient {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		//new JF_main("yan kcdq");
 		new ChatClient(args[0], Integer.parseInt(args[1]), args[2]);
 	}
 	
@@ -34,8 +37,8 @@ public class ChatClient {
 	public ChatClient(String hostname, int port, String user){
 		username=user;
 		try{
-			connection = new Socket(hostname, port);
 			mainFrame=new JF_main(user,this);
+			connection = new Socket(hostname, port);
 			writer = new ObjectOutputStream(connection.getOutputStream());
 			reader = new ObjectInputStream(connection.getInputStream());
 		}catch(IOException ioe){
@@ -68,18 +71,29 @@ public class ChatClient {
 				try {
 					while(true){
 						Object o = reader.readObject();
-						//Si l'objet reçu est une ArrayList
-						if(o instanceof ArrayList<?>){
-							mainFrame.setListRoomsNames((ArrayList<String>)o);
-						}else{
+
+						if(o instanceof String){
 							String msg = (String)o;
-							//On extrait le nom de la salle
-							String room = msg.substring(msg.indexOf("[")+1, msg.indexOf("]"));
-							msg = msg.replace("["+room+"]", "");
-							//On affiche le message dans la bonne salle
-							for(JF_roomTchat tchat : mainFrame.getRoomsTchat()){
-								if(tchat.getRoomName().equals(room)){
-									tchat.displayNewMessage(msg);
+							if(msg.equals(Commandes.RECEIVE_LIST_ROOMS)){
+								mainFrame.setListRoomsNames((ArrayList<String>)reader.readObject());
+								
+							}else if(msg.equals(Commandes.RECEIVE_LIST_USERS)){
+								mainFrame.setListUserNames((ArrayList<String>)reader.readObject());
+								
+							}else if(msg.startsWith(Commandes.RECEIVE_OPEN_PVP)){
+								String roomName=msg.replace(Commandes.RECEIVE_OPEN_PVP, "");
+								String tmp = roomName.replace(Commandes.LABEL_ROOM_PVP, "");
+								String user=tmp.substring(0, tmp.indexOf("-"));
+								mainFrame.addRoomTchat(new JF_roomTchat(roomName, getThis(), user));
+							}else{
+								//On extrait le nom de la salle
+								String room = msg.substring(msg.indexOf("[")+1, msg.indexOf("]"));
+								msg = msg.replace("["+room+"]", "");
+								//On affiche le message dans la bonne salle
+								for(JF_roomTchat tchat : mainFrame.getRoomsTchat()){
+									if(tchat.getRoomName().equals(room)){
+										tchat.displayNewMessage(msg);
+									}
 								}
 							}
 						}
@@ -95,6 +109,10 @@ public class ChatClient {
 		
 	}
 	
+	private ChatClient getThis(){
+		return this;
+	}
+	
 	private void close(){
 		try{
 			writer.close();
@@ -106,9 +124,9 @@ public class ChatClient {
 		}
 	}
 	
-	public void sendMessage(String message, String roomName){
+	public void sendMessage(String message){
 		try{
-			writer.writeUTF(message);
+			writer.writeUTF(Commandes.SEND_MESSAGE+message);
 			writer.flush();
 		}
 		catch(IOException ioe){
@@ -119,7 +137,7 @@ public class ChatClient {
 	//On envoi la commande de création d'une room
 	public void createRoom(String name){
 		try{
-			writer.writeUTF("[NewRoom]"+name);
+			writer.writeUTF(Commandes.SEND_NEW_ROOM+name);
 			writer.flush();
 		}
 		catch(IOException ioe){
@@ -130,17 +148,7 @@ public class ChatClient {
 	//Envoi la commande de modification de la room courante
 	public void setCurrentRoom(String name){
 		try{
-			writer.writeUTF("[SetCurrentRoom]"+name);
-			writer.flush();
-		}
-		catch(IOException ioe){
-			System.err.println(ioe.getStackTrace().toString());
-		}
-	}
-	
-	private void deleteRoom(String name){
-		try{
-			writer.writeUTF("dr/;"+name);
+			writer.writeUTF(Commandes.SEND_SET_ROOM+name);
 			writer.flush();
 		}
 		catch(IOException ioe){
